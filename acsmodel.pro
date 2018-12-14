@@ -22,10 +22,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-        acsmodel.cpp
+        acsmodel.cpp \
+    ../acsModel/configurator.cpp \
+    ../acsModel/transporter.cpp \
+    ../acsModel/keyreader.cpp \
+    ../acsModel/accesser.cpp
 
 HEADERS += \
-        acsmodel.h
+        acsmodel.h \
+    ../acsModel/configurator.h \
+    ../acsModel/transporter.h \
+    ../acsModel/keyreader.h \
+    ../acsModel/accesser.h
 unix {
     target.path = /usr/lib
     INSTALLS += target

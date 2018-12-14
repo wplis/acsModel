@@ -1,12 +1,43 @@
+#include <EEPROM.h>
+#include <arduino.h>
 #include "acsmodel.h"
 
-acsModel::acsModel(btc newId)
+acsModel::acsModel()
+{
+    id = 0;
+}
+
+btc acsModel::create(btc newId)
 {
     id = newId;
-
-    for(i=0; i<16; i++)
-        sensors[i] = 255;
 }
+
+btc acsModel::saveConfig()
+{
+    EEPROM.write(8, id);
+    delay(10);
+    EEPROM.write(9, addr);
+    delay(10);
+}
+
+btc acsModel::loadConfig()
+{
+    id = EEPROM.read(8);
+    addr = EEPROM.read(9);
+
+    configure();
+}
+
+
+
+
+
+
+btc acsModel::configure()
+{
+
+}
+
 
 btc acsModel::shId()
 {
@@ -48,30 +79,4 @@ btc acsModel::calcPing(btc operation, btc first, btc second)
             answer = 255;
     }
     return answer;
-}
-
-btc acsModel::sensor(btc number)
-{
-    return sensors[number];
-}
-
-btc acsModel::addSensor(btc pin)
-{
-    for(i=0; i<16 && sensors[i]<255; i++);
-    if(i>15)
-        return 255;
-    sensors[i] = pin;
-
-    return i;
-}
-
-btc acsModel::delSensor(btc number)
-{
-    if(number > 15)
-        return 255;
-    for(i=number; i<15; i++)
-        sensors[i] = sensors[i+1];
-    sensors[i] = 255;
-
-    return i;
 }
