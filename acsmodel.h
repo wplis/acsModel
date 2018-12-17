@@ -1,6 +1,11 @@
 #ifndef ACSMODEL_H
 #define ACSMODEL_H
 
+#include "accesser.h"
+#include "configurator.h"
+#include "rfidreader.h"
+#include "transporter.h"
+
 #define btc unsigned char
 #define bti unsigned int
 
@@ -18,7 +23,6 @@ public:
     btc loadConfig();
 
 btc configure();
-
     btc shId();
     btc setAddr(btc);
     btc calcPing(btc, btc, btc);

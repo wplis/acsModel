@@ -7,20 +7,18 @@
 struct accCode
 {
 public:
-    accCode(bti);
-    ~accCode();
-    accCode *next, *prev;
-    btc *keyData;
+    accCode();
+    accCode *next;
+    btc keyData[4];
 };
 
 class accEsser
 {
     btc keyCount, i;
-    bti dataLen;
-    accCode *top, *bot, *index;
+    accCode *top, *bot, *index, *deleter;
 
 public:
-    accEsser(bti);
+    accEsser();
 
     btc add(btc *);
     btc count();

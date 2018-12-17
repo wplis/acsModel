@@ -46,7 +46,7 @@ btc confiGurator::delSensor(btc number)
     return i;
 }
 
-btc confiGurator::triger(btc number, bool isOn=true)
+btc confiGurator::triger(btc number, bool isOn)
 {
     if(trigers[number]<255)
         digitalWrite(trigers[number], isOn);
@@ -59,7 +59,7 @@ btc confiGurator::addTriger(btc pin)
     if(i>15)
         return 255;
     trigers[i] = pin;
-    pinMode(pin, OUTPUT);
+    pinMode(trigers[i], OUTPUT);
 
     return i;
 }
@@ -107,7 +107,7 @@ btc confiGurator::delIntens(btc number)
 
 btc confiGurator::trigClic(btc numTrig, btc timeSec)
 {
-    if(triger(numTrig) < 255)
+    if(triger(numTrig, true) < 255)
         trigWait[numTrig] = timeSec;
     else
         return 255;

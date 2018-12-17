@@ -1,25 +1,20 @@
 #ifndef KEYREADER_H
 #define KEYREADER_H
 
-#include <RFID.h>
-
 #define btc unsigned char
-#define bti unsigned int
 
 class keyReader
 {
-private:
-    btc i, id;
-
+protected:
     bool twoPanels;
-    
-    RFID *rfidIn, *rfidEx;
 public:
-    keyReader(bool);
+    keyReader()
+    {
+    }
 
-    btc create(btc);
-    btc watchKey();
-    btc *DataKey(bool);
+    virtual void create(bool);
+    virtual btc watchKey();
+    virtual btc *dataKey(bool);
 };
 
 #endif // KEYREADER_H

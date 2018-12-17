@@ -25,15 +25,16 @@ SOURCES += \
         acsmodel.cpp \
     ../acsModel/configurator.cpp \
     ../acsModel/transporter.cpp \
-    ../acsModel/keyreader.cpp \
-    ../acsModel/accesser.cpp
+    ../acsModel/accesser.cpp \
+    rfidreader.cpp
 
 HEADERS += \
         acsmodel.h \
     ../acsModel/configurator.h \
     ../acsModel/transporter.h \
     ../acsModel/keyreader.h \
-    ../acsModel/accesser.h
+    ../acsModel/accesser.h \
+    rfidreader.h
 unix {
     target.path = /usr/lib
     INSTALLS += target

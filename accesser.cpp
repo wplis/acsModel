@@ -1,27 +1,19 @@
 #include "accesser.h"
 
-accCode::accCode(bti len)
+accCode::accCode()
 {
-    keyData = new btc[len];
-    for(btc i=0; i<len;i++)
+    for(btc i=0; i<4;i++)
         keyData[i]=0;
 }
 
-accCode::~accCode()
+accEsser::accEsser()
 {
-    delete [] keyData;
-}
-
-accEsser::accEsser(bti dLen)
-{
-    dataLen = dLen;
-    index = new accCode(dataLen);
+    index = new accCode();
     keyCount = 0;
 
     top = index;
     bot = index;
     index->next = index;
-    index->prev = index;
 }
 
 btc accEsser::add(btc *data)
@@ -29,12 +21,16 @@ btc accEsser::add(btc *data)
     if(keyCount>=254)
         return 255;
 
-    top->next = new accCode(dataLen);
-    keyCount++;
-    top->next->prev = top;
-    top = top->next;
+    top->next = new accCode();
+    if(top->next)
+    {
+        keyCount++;
+        top = top->next;
+    }
+    else
+        return 255;
 
-    for(i=0; i<dataLen; i++)
+    for(i=0; i<4; i++)
         top->keyData[i] = data[i];
 
     return keyCount;
@@ -50,13 +46,14 @@ btc accEsser::del(btc number)
     if(!number)
         return 255;
 
-    for(i=1, index=bot->next; i<254 && i<number; i++)
+    for(i=1, index=bot; i<254 && i<number; i++)
         index = index->next;
 
-    index->prev->next = index->next;
-    index->next->prev = index->prev;
+    deleter = index->next;
+    index->next = index->next->next;
 
-    delete index;
+
+    delete deleter;
     keyCount--;
 
     return i;
@@ -68,10 +65,10 @@ btc accEsser::findKey(btc *data)
     bti j;
     for(i=0; i<=keyCount; i++)
     {
-        for (j=0; j<dataLen; j++)
+        for (j=0; j<4; j++)
             if(index->keyData[j] != data[j])
                 break;
-        if(j==dataLen)
+        if(j==4)
             return i;
         index = index->next;
     }
