@@ -10,9 +10,9 @@ private:
     bti i;
     unsigned long waitTime, tmpTime;
     btc intensiv[6];
-    btc sensors[16];
-    btc trigers[16];
-    btc trigWait[16];
+    btc sensors[8];
+    btc trigers[8];
+    btc trigWait[8];
 
 public:
     confiGurator();

@@ -11,11 +11,12 @@ public:
     btc addEvent(bti);
     btc countEvents();
 
-    void create(btc *, btc *);
+    void create(btc *);
     btc *question();
     btc *answer();
 
-    void isReady(btc);
+    bool isReady(btc);
+    bool sendEvent();
 };
 
 #endif // TRANSPORTER_H

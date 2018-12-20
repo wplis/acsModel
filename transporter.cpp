@@ -5,9 +5,9 @@ btc eventCount;
 btc answerReady;
 bti events[16];
 
-btc *inData, *outData;
+btc *transData;
 btc inQest[2];
-btc outQest[3];
+btc outAns[3];
 
 void senderEvent()
 {
@@ -17,27 +17,29 @@ void senderEvent()
             Wire.write(0);
         break;
         case 1:
-            Wire.write(outQest[0]);
+            Wire.write(outAns[0]);
         break;
         case 2:
-            Wire.write(outQest[0]);
-            Wire.write(outQest[1]);
+            Wire.write(outAns[0]);
+            Wire.write(outAns[1]);
         break;
         case 3:
-            Wire.write(outQest[0]);
-            Wire.write(outQest[1]);
-            Wire.write(outQest[2]);
+            Wire.write(outAns[0]);
+            Wire.write(outAns[1]);
+            Wire.write(outAns[2]);
         break;
         case 4:
-            Wire.write(outQest[0]);
+            Wire.write(outAns[0]);
             for(btc i=0; i<4;i++)
-                Wire.write(outData[i]);
+                Wire.write(transData[i]);
+        break;
     }
+    answerReady = 0;
 }
 
 void getterEvent()
 {//поступление данных от ESP (1, 2, 5 байт)
-    if(Wire.available())
+    if(Wire.available() && !inQest[0])
         inQest[0] = Wire.read();
     switch(inQest[0] >> 4)
     {
@@ -50,15 +52,14 @@ void getterEvent()
         case 4:
             for(btc i=0; i<4;i++)
                 if(Wire.available())
-                    inData[i] = Wire.read();
+                    transData[i] = Wire.read();
         break;
     }
-     
 }
 
-transPorter::transPorter(btc addr)
+transPorter::transPorter(btc addrIn)
 {
-    Wire.begin(addr);
+    Wire.begin(addrIn);
     Wire.onRequest(senderEvent);
     Wire.onReceive(getterEvent);
     eventCount = 0;
@@ -66,13 +67,15 @@ transPorter::transPorter(btc addr)
     inQest[0] = 0;
     inQest[1] = 0;
 
-    outQest[0] = 0;
-    outQest[1] = 0;
-    outQest[2] = 0;
+    outAns[0] = 0;
+    outAns[1] = 0;
+    outAns[2] = 0;
 }
 
 btc transPorter::addEvent(bti ev)
 {
+    if(eventCount > 14)
+        return 255;
     events[eventCount] = ev;
     eventCount++;
     return eventCount;
@@ -90,16 +93,34 @@ btc *transPorter::question()
 
 btc *transPorter::answer()
 {
-    return outQest;
+    return outAns;
 }
 
-void transPorter::create(btc *in, btc *out)
+void transPorter::create(btc *trIn)
 {
-    inData = in;
-    outData = out;
+    transData = trIn;
 }
 
-void transPorter::isReady(btc rd)
+bool transPorter::isReady(btc rd)
 {
+    if(answerReady)
+        return false;
     answerReady = rd;
+    return true;
+}
+
+bool transPorter::sendEvent()
+{
+    if(!eventCount)
+        return false;
+
+    outAns[0] = events[0] >> 8;
+    outAns[1] = events[0] & 255;
+
+    for(btc i=0; i<15; i++)
+        events[i] = events[i+1];
+
+    eventCount--;
+
+    return isReady(2);
 }
