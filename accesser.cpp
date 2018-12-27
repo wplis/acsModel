@@ -18,6 +18,9 @@ accEsser::accEsser()
 
 btc accEsser::add(btc *data)
 {
+    i=findKey(data);
+    if(i<255)
+        return i;
     if(keyCount>=254)
         return 255;
 

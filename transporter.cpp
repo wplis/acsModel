@@ -1,6 +1,8 @@
 #include <Wire.h>
 #include "transporter.h"
 
+#include "Arduino.h"
+
 btc eventCount;
 btc answerReady;
 bti events[16];
@@ -9,8 +11,12 @@ btc *transData;
 btc inQest[2];
 btc outAns[3];
 
+void i2cIncomingCheck();
+void i2cPrepareAnswer();
+
 void senderEvent()
 {
+    i2cPrepareAnswer();
     switch(answerReady)
     {
         case 0:
@@ -38,30 +44,35 @@ void senderEvent()
 }
 
 void getterEvent()
-{//поступление данных от ESP (1, 2, 5 байт)
+{
+//поступление данных от ESP (1, 2, 5 байт)
     if(Wire.available() && !inQest[0])
-        inQest[0] = Wire.read();
-    switch(inQest[0] >> 4)
     {
-        case 1:
-        case 6:
-        case 7:
-            if(Wire.available())
-              inQest[1] = Wire.read();
-        break;
-        case 4:
-            for(btc i=0; i<4;i++)
+
+        inQest[0] = Wire.read();      
+        switch(inQest[0] >> 4)
+        {
+            case 1:
+            case 6:
+            case 7:
                 if(Wire.available())
-                    transData[i] = Wire.read();
-        break;
+                    inQest[1] = Wire.read();
+            break;
+            case 4:
+                for(btc i=0; i<4 && Wire.available();i++)
+                        transData[i] = Wire.read();
+
+            break;
+        }
     }
+    i2cIncomingCheck();
 }
 
 transPorter::transPorter(btc addrIn)
 {
-    Wire.begin(addrIn);
     Wire.onRequest(senderEvent);
     Wire.onReceive(getterEvent);
+    Wire.begin(addrIn);
     eventCount = 0;
     
     inQest[0] = 0;

@@ -71,43 +71,49 @@ btc calcPing(btc operation, btc first, btc second)
 
 void setup() {
     loadConfig();
-
-//    id=0;
-//    panels=0;
     
-    if(!(0<addr<255))
+    if(!(0<addr && addr<127))
         addr=10;
-
+Serial.begin(9600);
     trans = new transPorter(addr);
-
+    trans->create(inKey);
+panels=true;
+Serial.println(panels);
     switch(id)
     {
         case 2:
             keyList = new accEsser();
             reader = new rfidReader();
             reader->create(panels);
-            trans->create(inKey);
         case 1:
             piner = new confiGurator();
+piner->addSensor(A0);
         break;
     }
 }
 
-void loop() {
-
+void i2cIncomingCheck()
+{
+    i=trans->question()[0]>>4;
 //обработка поступлений и ответов по i2c обработка транспортера
-    if(trans->isReady(0)) switch(trans->question()[0]>>4)
+    if(trans->isReady(0)) switch(i)
     {
         case 1://обработка пинга
             i=16;
             i+= trans->countEvents();
             trans->answer()[0] = i;
-            trans->answer()[1] = calcPing(trans->question()[0] & 15, trans->question()[1] >> 4, trans->question()[1] && 15);
-            
+            trans->answer()[1] = calcPing(trans->question()[0] & 15, trans->question()[1] >> 4, trans->question()[1] & 15);           
             trans->question()[0] = 0;
             trans->isReady(2);
         break;
-        case 2://обработка запроса состояния датчиков
+        case 2://обработка запроса состояния датчиков     
+            if(id < 1 || id > 254)
+            {
+                trans->answer()[0]=255;
+                trans->question()[0]=0;
+                trans->isReady(1);
+                return;
+            }
             ii=piner->sensor(trans->question()[0] & 15);
             trans->answer()[0] = 32 + (trans->question()[0] & 15);
             trans->answer()[1] = ii >> 8;
@@ -117,13 +123,20 @@ void loop() {
             trans->isReady(3);
         break;
         case 3://отправка запрошенного количества событий из списка
-            if(trans->sendEvent())
-                trans->question()[0]--;
-
-            if(!trans->countEvents() || !(trans->question()[0] & 15))
+            if(trans->countEvents())
+                trans->sendEvent();
+            else
+                trans->answer()[0]=1;
                 trans->question()[0]=0;
         break;
         case 4://опрос, добавление или удаление ключа доступа
+            if(id < 2)
+            {
+                trans->answer()[0]=1;
+                trans->question()[0]=0;
+                trans->isReady(1);
+                return;
+            }
             i=trans->question()[0] & 15;
             if(!i)
                 break;
@@ -182,6 +195,8 @@ void loop() {
             {
                 case 0:
                     id=trans->question()[1];
+                    saveConfig();
+                    id=0;
                 break;
                 case 1:
                     panels=trans->question()[1];
@@ -190,20 +205,18 @@ void loop() {
                     addr=trans->question()[1];
                 break;
             }
-            
-            saveConfig();
-                    
-            i=id;
-            j=addr;
-            loadConfig();
-                    
-            if(i!=id || j!=addr)
-                trans->answer()[0]++;
-                
+
             trans->question()[0] = 0;
             trans->isReady(1);
         break;
         case 7://управление, включаем/выключаем триггер или включаем на время
+            if(id < 1)
+            {
+                trans->answer()[0]=1;
+                trans->question()[0]=0;
+                trans->isReady(1);
+                return;
+            }
             i=trans->question()[0]&15;
             j=trans->question()[1];
             ii=12800+i<<4;
@@ -218,10 +231,16 @@ void loop() {
             trans->addEvent(ii);
         break;
     }
-    
+    return;
+}
+
+void i2cPrepareAnswer()
+{
+  Serial.print("key watch: ");
+Serial.println(reader->watchKey());
     switch(id)
     {
-        case 2://обработка считывателя карты
+        case 3://обработка считывателя карты
             i=reader->watchKey();
             if(i)
             {
@@ -251,4 +270,12 @@ void loop() {
 //проверка состояний датчиков
         break;
     }
+    if(trans->isReady(0))
+        trans->sendEvent();
+    return;
+}
+//---------------------------------------------------------------------
+void loop()
+{
+
 }
